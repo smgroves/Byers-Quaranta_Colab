@@ -40,5 +40,5 @@ In this repository, we are analyzing multiple datasets across several conditions
     2. 2 allografts from TKO (Rb1; Trp53; Rbl2) cell lines (KP11, Hes1-)
     3. 1 allograft from a Rb1; Trp53; Axin2-lacZ cell line (KP3)
 4. Patient biopsies
-    1. 6 Pre-treatment biopsies (SC123-140A, SC123-138A, SC123-135A, SC134-142A, SC134-145A, SC134-146A)
-    2. 3 Post-treatment biopsies (SC134-135B, SC140-142B, SC140-145B)
+    1. 6 Pre-treatment (relapse after chemo but before second line of therapy) biopsies (SC123-140A, SC123-138A, SC123-135A, SC134-142A, SC134-145A, SC134-146A)
+    2. 3 Post-treatment (relapse after olaparib and immunotherapy) biopsies (SC134-135B, SC140-142B, SC140-145B)

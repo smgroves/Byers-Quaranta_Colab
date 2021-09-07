@@ -3,6 +3,8 @@
 
 *Note: this code interacts with data from a shared Box folder between Vanderbilt and MD Anderson. Please request access for original data.*
 
+*Note 2: Three of the SC152 loom files were too big to push to GitHub, and are saved locally and in Box.*
+
 ## Goals
 This repository contains the code and analysis for the U01 Supplement, which aims to understand the relationship between immune populations in SCLC patients and phenotypic plasticity of SCLC cells. 
 

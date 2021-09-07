@@ -1,4 +1,4 @@
-# Byers-Quaranta_Colab
+# Byers-Quaranta Collaboration
  Code generated for U01 Supplement between Byers and Quaranta labs
 
 *Note: this code interacts with data from a shared Box folder between Vanderbilt and MD Anderson. Please request access for original data.*

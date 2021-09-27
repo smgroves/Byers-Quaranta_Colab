@@ -4,3 +4,5 @@ data/untreated-cline-allografts/SC152_KP1_possorted_genome_bam_TU6GD.loom
 data/untreated-cline-allografts/SC152_KP3_possorted_genome_bam_J96W9.loom
 .DS_Store
 .ipynb_checkpoints/README-checkpoint.md
+.DS_Store
+data/.DS_Store

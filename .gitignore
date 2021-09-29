@@ -1,4 +1,6 @@
-
+notebooks/out/*
+notebooks/cache/*
+notebooks/.ipynb_checkpoints/*
 data/untreated-cline-allografts/SC152_KP11_possorted_genome_bam_BKL4A.loom
 data/untreated-cline-allografts/SC152_KP1_possorted_genome_bam_TU6GD.loom
 data/untreated-cline-allografts/SC152_KP3_possorted_genome_bam_J96W9.loom

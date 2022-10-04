@@ -1,5 +1,5 @@
 ---
-title: "hdWGCNA of Mesoderm Data"
+title: "hdWGCNA of Patient Biopsies Data"
 output: 
   html_notebook:
     self_contained: yes
@@ -12,7 +12,7 @@ This notebook is for running hdWGCNA (single-cell WGCNA) and follows the tutoria
 # Setup
 
 ```{r, setup, include=FALSE}
-knitr::opts_knit$set(root.dir ="/Users/smgroves/Documents/GitHub/mesoderm_booleabayes_project/")
+knitr::opts_knit$set(root.dir ="/Users/smgroves/Documents/GitHub/collabs/byers-collaboration/")
 ```
 
 ```{r install, message = FALSE,warning = FALSE}
@@ -48,48 +48,108 @@ set.seed(12345)
 
 ## Read in data
 
+We need to read in all of these samples and combine them into one Seurat object. 
+
 ```{r read-data}
-raw_counts <- read.table(
-  file = './data/raw-counts-mesoderm-wildtype.csv',row.names = 1, header  = 1, sep = ','
-)
-normalized_data <- read.table(
-  file = './data/log1p-normalized-counts-mesoderm-wildtype.csv', row.names = 1, header = 1, sep = ','
-)
-seurat<-CreateSeuratObject(counts = raw_counts, min.cells = 3, min.genes = 350, project = "mesoderm")
+data.135A <- Read10X(data.dir = "/Users/smgroves/Box/Byers-Quaranta-Collab/U54_Project_1_WGCNA/SC123_135A/")
+data.135B <- Read10X(data.dir = "/Users/smgroves/Box/Byers-Quaranta-Collab/U54_Project_1_WGCNA/SC134_135B/")
+data.142A <- Read10X(data.dir = "/Users/smgroves/Box/Byers-Quaranta-Collab/U54_Project_1_WGCNA/SC134_142A/")
+data.145A <- Read10X(data.dir = "/Users/smgroves/Box/Byers-Quaranta-Collab/U54_Project_1_WGCNA/SC134_145A/")
+data.142B <- Read10X(data.dir = "/Users/smgroves/Box/Byers-Quaranta-Collab/U54_Project_1_WGCNA/SC140_142B/")
+data.145B <- Read10X(data.dir = "/Users/smgroves/Box/Byers-Quaranta-Collab/U54_Project_1_WGCNA/SC140_145B/")
+
+s135A <- CreateSeuratObject(counts = data.135A, project = "135A", min.cells = 3, min.features = 200)
+s135B <- CreateSeuratObject(counts = data.135B, project = "135B", min.cells = 3, min.features = 200)
+s142A <- CreateSeuratObject(counts = data.142A, project = "142A", min.cells = 3, min.features = 200)
+s145A <- CreateSeuratObject(counts = data.145A, project = "145A", min.cells = 3, min.features = 200)
+s142B <- CreateSeuratObject(counts = data.135A, project = "142B", min.cells = 3, min.features = 200)
+s145B <- CreateSeuratObject(counts = data.135A, project = "145B", min.cells = 3, min.features = 200)
+
+```
+
+## Initial normalization and filtering 
+```{r norm}
+preprocess <- function(data){
+  data <- NormalizeData(data, normalization.method = "LogNormalize", scale.factor = 10000)
+  data <- FindVariableFeatures(data, selection.method = "vst", nfeatures = 2000)
+  all.genes <- rownames(data)
+  data <- ScaleData(data, features = all.genes)
+  
+  return(data)
+}
+
+s135A <- preprocess(s135A)
+s135B <- preprocess(s135B)
+s142A <- preprocess(s142A)
+s145A <- preprocess(s145A)
+s142B <- preprocess(s142B)
+s145B <- preprocess(s145B)
+
+
+
+```
+# Integrate datasets
+
+```{r}
+data.combined <- merge(s135A, y = c(s135B,s142A,s142B,s145A, s145B), add.cell.ids = c("135A", "135B","142A","142B","145A","145B"), merge.data = TRUE, project = "biopsies")
+data.combined
+
+```
+
+```{r}
+saveRDS(data.combined, file = "../data/combined_Seurat.rds")
 
 ```
 
 ## Load metadata and add to seurat object
 
 ```{r preprocessing}
-seurat@assays$RNA@data <- as.matrix(normalized_data)
+data.combined <- readRDS("data/combined_Seurat.rds")
+
+table(data.combined$orig.ident)
+
+data.combined[["sample"]] = data.combined$orig.ident
 
 meta <- read.table(
-  file = './data/metadata-mesoderm-wildtype.csv',
+  file = 'data/patient-biopsies/cell_ids_biopsies_edited.csv',
   as.is = TRUE, 
   sep = ',', 
   header = 1,
   row.names = 1
 )
-row.names(meta) <- make.names(row.names(meta))
+# row.names(meta) <- make.names(row.names(meta))
 
-umap <- as.matrix(meta[c('umap.1','umap.2')])
-colnames(umap) <- paste0("UMAP_", 1:2)
-row.names(umap) <- make.names(row.names(meta))
 
-seurat[["UMAP"]] <- CreateDimReducObject(embeddings = umap, key = "UMAP_", assay = DefaultAssay(seurat))
 
-Idents(seurat) <- meta$cell.pop
-seurat[["cell.pop"]] <- Idents(object = seurat)
+Idents(data.combined) <- meta$cell_type
+data.combined[["cell_type"]] <- Idents(object = data.combined)
 
-Idents(seurat) <-meta$embryo
-seurat[["embryo"]] <- Idents(object = seurat)
-DimPlot(seurat, reduction = "UMAP", pt.size = 0.5, dims = c(1,2),group.by = 'embryo' )
+Idents(data.combined) <- meta$subtype
+data.combined[["subtype"]] <- Idents(object = data.combined)
 
-DimPlot(seurat, reduction = "UMAP", pt.size = 0.5, dims = c(1,2),group.by = 'cell.pop' )
+all.genes <- rownames(data.combined)
+
+data.combined <- ScaleData(data.combined, features = all.genes)
+data.combined <- FindVariableFeatures(object = data.combined)
+data.combined <- RunPCA(data.combined, features = VariableFeatures(object = data.combined))
+saveRDS(data.combined, file = "data/combined_Seurat.rds")
 
 
 ```
+## Plotting
+```{r}
+data.combined <- FindNeighbors(data.combined, dims = 1:10)
+data.combined <- FindClusters(data.combined, resolution = 0.5)
+data.combined <- RunUMAP(data.combined, dims = 1:10)
+
+DimPlot(data.combined, reduction = "umap", pt.size = 0.5, dims = c(1,2),group.by = 'sample' )
+
+DimPlot(data.combined, reduction = "umap", pt.size = 0.5, dims = c(1,2),group.by = 'cell_type' )
+
+
+```
+
+
 ## Prepare for hgWGCNA
 
 As per the tutorial, our seurat object needs to first run through the following Seurat steps:
@@ -101,28 +161,8 @@ As per the tutorial, our seurat object needs to first run through the following 
 - Non-linear dimensionality reduction RunUMAP for visualizations.
 - Group cells into clusters (FindNeighbors and FindClusters).
 
-We already have the normalization and the UMAP. We perform the other steps below.
+We already have all of these things (not batch corrected though).
 
-```{r initial-setup-for-hgWGCNA}
-seurat <- FindVariableFeatures(seurat, selection.method = "vst", nfeatures = 2000)
-
-# Identify the 10 most highly variable genes
-top10 <- head(VariableFeatures(seurat), 10)
-
-# plot variable features with and without labels
-plot1 <- VariableFeaturePlot(seurat)
-plot2 <- LabelPoints(plot = plot1, points = top10, repel = TRUE)
-plot2
-
-all.genes <- rownames(seurat)
-seurat <- ScaleData(seurat, features = all.genes)
-
-seurat <- RunPCA(seurat, features = VariableFeatures(object = seurat))
-seurat <- FindNeighbors(seurat, dims = 1:10)
-seurat <- FindClusters(seurat, resolution = 0.5)
-
-
-```
 ## Setup WGCNA
 
 We define how hdWGCNA will be run, and the name of the experiment.

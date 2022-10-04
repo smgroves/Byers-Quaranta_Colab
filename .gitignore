@@ -12,3 +12,4 @@ data/.DS_Store
 *.loom
 data/.DS_Store
 data/patient-biopsies/Q_A146.csv
+data/combined_Seurat.rds

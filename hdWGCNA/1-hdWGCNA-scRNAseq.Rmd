@@ -62,8 +62,8 @@ s135A <- CreateSeuratObject(counts = data.135A, project = "135A", min.cells = 3,
 s135B <- CreateSeuratObject(counts = data.135B, project = "135B", min.cells = 3, min.features = 200)
 s142A <- CreateSeuratObject(counts = data.142A, project = "142A", min.cells = 3, min.features = 200)
 s145A <- CreateSeuratObject(counts = data.145A, project = "145A", min.cells = 3, min.features = 200)
-s142B <- CreateSeuratObject(counts = data.135A, project = "142B", min.cells = 3, min.features = 200)
-s145B <- CreateSeuratObject(counts = data.135A, project = "145B", min.cells = 3, min.features = 200)
+s142B <- CreateSeuratObject(counts = data.142B, project = "142B", min.cells = 3, min.features = 200)
+s145B <- CreateSeuratObject(counts = data.145B, project = "145B", min.cells = 3, min.features = 200)
 
 ```
 
@@ -73,8 +73,7 @@ preprocess <- function(data){
   data <- NormalizeData(data, normalization.method = "LogNormalize", scale.factor = 10000)
   data <- FindVariableFeatures(data, selection.method = "vst", nfeatures = 2000)
   all.genes <- rownames(data)
-  data <- ScaleData(data, features = all.genes)
-  
+  # data <- ScaleData(data, features = all.genes)
   return(data)
 }
 
@@ -142,7 +141,7 @@ data.combined <- FindNeighbors(data.combined, dims = 1:10)
 data.combined <- FindClusters(data.combined, resolution = 0.5)
 data.combined <- RunUMAP(data.combined, dims = 1:10)
 
-DimPlot(data.combined, reduction = "umap", pt.size = 0.5, dims = c(1,2),group.by = 'sample' )
+DimPlot(data.combined, reduction = "umap", pt.size = 0.5, dims = c(1,2),group.by = 'sample')
 
 DimPlot(data.combined, reduction = "umap", pt.size = 0.5, dims = c(1,2),group.by = 'cell_type' )
 

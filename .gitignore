@@ -13,3 +13,5 @@ data/.DS_Store
 data/.DS_Store
 data/patient-biopsies/Q_A146.csv
 data/combined_Seurat.rds
+data/combined_Seurat_142AB.rds
+biopsy_updated/Patient_biopsy_relapsed.integrated.Cancer_cells.seurat.RData
